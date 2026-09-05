@@ -2,120 +2,285 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Pocket Money</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My PiggyBank Hub</title>
+  <!-- Canvas Confetti for Reward Celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #f7fafc; margin: 0; padding: 16px; color: #2d3748; }
-    .container { max-width: 480px; margin: 0 auto; }
-    .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-    .balance-val { font-size: 3.2rem; font-weight: 800; color: #38a169; margin: 4px 0; text-align: center; }
-    .subtitle { text-align: center; color: #a0aec0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
-    h3 { margin-top: 0; font-size: 1.15rem; color: #2b6cb0; margin-bottom: 12px; }
-    
-    .form-group { margin-bottom: 12px; text-align: left; }
-    label { display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
-    input, select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
-    
-    button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; }
-    .btn-green { background: #38a169; }
-    .btn-blue { background: #3182ce; }
-    .btn-purple { background: #805ad5; }
-    .btn-gray { background: #718096; margin-top: 8px; }
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
 
-    /* Saving Goal Progress Cards */
-    .goal-card { background: #f7fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
-    .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .goal-title { font-weight: 700; font-size: 0.95rem; color: #2d3748; }
-    .goal-progress-bg { background: #edf2f7; border-radius: 10px; height: 14px; overflow: hidden; width: 100%; margin: 6px 0; }
-    .goal-progress-fill { background: linear-gradient(90deg, #48bb78, #38a169); height: 100%; border-radius: 10px; transition: width 0.4s ease; }
-    .goal-stats { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: #718096; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 70%);
+      margin: 0;
+      padding: 16px;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container { max-width: 480px; margin: 0 auto; padding-bottom: 30px; }
+
+    /* Glassmorphism Card Style */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Rank & Level Pill */
+    .rank-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* Balance Hero Display */
+    .balance-card {
+      text-align: center;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.4) 0%, rgba(236, 72, 153, 0.25) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 26px 20px;
+    }
+    .balance-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .balance-val {
+      font-size: 3.4rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 8px 0 4px;
+      letter-spacing: -1px;
+      text-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+    }
+
+    h3 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #ffffff; }
+
+    .form-group { margin-bottom: 14px; text-align: left; }
+    label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid var(--card-border);
+      border-radius: 14px;
+      font-size: 1rem;
+      color: #fff;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+    select option { background: #1e293b; color: #fff; }
+
+    /* High-Energy Glow Buttons */
+    button.btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button.btn:active { transform: scale(0.98); }
+    .btn-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+    .btn-blue { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+    .btn-purple { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
+    .btn-gray { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); color: var(--text-muted); }
+
+    /* Saving Goals Cards */
+    .goal-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .goal-header { display: flex; justify-content: space-between; align-items: center; }
+    .goal-title { font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .btn-delete-goal {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+    .btn-delete-goal:hover { color: var(--danger); }
+    .goal-progress-bg {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      height: 12px;
+      overflow: hidden;
+      margin: 10px 0 8px;
+    }
+    .goal-progress-fill {
+      background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .goal-stats { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
 
     /* Timeframe Slicer Chips */
-    .slicer-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; justify-content: center; }
-    .slicer { background: #edf2f7; border: 1px solid #cbd5e0; color: #4a5568; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: auto; }
-    .slicer.active { background: #2b6cb0; color: white; border-color: #2b6cb0; }
+    .slicer-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
+    .slicer {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .slicer.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Kid Analytics Grid */
-    .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
-    .kid-stat-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; }
-    .kid-stat-title { font-size: 0.72rem; font-weight: 700; color: #718096; text-transform: uppercase; }
-    .kid-stat-val { font-size: 1.35rem; font-weight: 800; margin: 4px 0 0; }
-    
-    /* Transaction Filter Chips */
+    /* Analytics Mini-Cards */
+    .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+    .kid-stat-box { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px; text-align: center; }
+    .kid-stat-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kid-stat-val { font-size: 1.3rem; font-weight: 900; margin: 4px 0 0; }
+
+    /* Filter Chips */
     .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
-    .chip { background: #edf2f7; border: none; color: #4a5568; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; width: auto; white-space: nowrap; }
-    .chip.active { background: #3182ce; color: white; }
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .chip.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
 
+    /* Transactions Table */
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 10px 4px; text-align: left; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
-    .pos { color: #38a169; font-weight: 700; }
-    .neg { color: #e53e3e; font-weight: 700; }
-    .type-badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 6px; font-weight: 700; text-transform: uppercase; margin-right: 4px; display: inline-block; }
-    .type-chore { background: #ebf8ff; color: #2b6cb0; }
-    .type-reward { background: #e6fffa; color: #234e52; }
-    .type-penalty { background: #fff5f5; color: #9b2c2c; }
-    .type-allowance { background: #faf5ff; color: #6b46c1; }
-    .type-expense { background: #edf2f7; color: #4a5568; }
+    th, td { padding: 12px 6px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
+    .pos { color: var(--success); font-weight: 800; font-size: 1rem; }
+    .neg { color: var(--danger); font-weight: 800; font-size: 1rem; }
+    .type-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-right: 4px; display: inline-block; }
+    .type-chore { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+    .type-reward { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .type-penalty { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .type-allowance { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    .type-expense { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
-    .denied-banner { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.9rem; }
+    .denied-banner {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
 
     <!-- LOGIN SCREEN -->
-    <div class="card" id="loginCard">
-      <h2 style="margin-top:0; text-align:center; color:#2b6cb0;">Kid Sign In</h2>
+    <div class="card" id="loginCard" style="text-align: center; padding: 36px 24px;">
+      <div style="font-size: 3.5rem; margin-bottom: 10px;">🚀</div>
+      <h2 style="margin: 0 0 6px; font-weight: 900; font-size: 1.6rem; letter-spacing: -0.5px;">Welcome Back!</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 24px;">Unlock your piggy bank and missions</p>
+
       <div class="form-group">
-        <label for="childNameSelect">Who is saving today?</label>
-        <select id="childNameSelect"><option value="">Loading names...</option></select>
+        <label for="childNameSelect">Select Your Name</label>
+        <select id="childNameSelect"><option value="">Loading heroes...</option></select>
       </div>
+
       <div class="form-group">
-        <label for="pinInput">Enter 4-Digit PIN</label>
-        <input type="password" id="pinInput" placeholder="••••" maxlength="6" style="text-align:center; letter-spacing:4px; font-size:1.4rem;">
+        <label for="pinInput">Secret 4-Digit PIN</label>
+        <input type="password" id="pinInput" placeholder="••••" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:1.6rem;">
       </div>
-      <button class="btn-blue" onclick="attemptLogin()">Unlock My Savings</button>
+
+      <button class="btn btn-blue" onclick="attemptLogin()">✨ Unlock My PiggyBank</button>
     </div>
 
-    <!-- AUTHENTICATED DASHBOARD -->
+    <!-- MAIN INTERACTIVE DASHBOARD -->
     <div id="dashboard" style="display: none;">
       
-      <!-- Balance Card -->
-      <div class="card">
-        <div class="subtitle" id="childGreeting">Total Savings</div>
+      <!-- Balance Hero Card with Rank Badge -->
+      <div class="card balance-card">
+        <div id="rankBadge" class="rank-pill">🪙 Novice Saver</div>
+        <div class="balance-title" id="childGreeting">Total Savings</div>
         <div class="balance-val" id="balanceDisplay">Rs. 0</div>
       </div>
 
-      <!-- Denied Chores Note -->
+      <!-- Denied Chores Notice Banner -->
       <div class="denied-banner" id="deniedSection" style="display: none;">
-        <strong style="color: #c53030;">Note on recent chores:</strong>
-        <div id="deniedList"></div>
+        <strong style="color: #f87171;">⚠️ Note on Recent Chores:</strong>
+        <div id="deniedList" style="margin-top: 4px; color: #cbd5e1;"></div>
       </div>
 
       <!-- SAVING GOALS & TARGETS -->
-      <div class="card" style="border-left: 5px solid #805ad5;">
+      <div class="card" style="border-left: 4px solid var(--accent);">
         <h3>🎯 My Saving Goals</h3>
-        <div id="goalsContainer">Loading goals...</div>
+        <div id="goalsContainer">Loading targets...</div>
         
-        <details style="margin-top:12px; font-size:0.9rem;">
-          <summary style="font-weight:700; color:#805ad5; cursor:pointer;">+ Set a New Saving Goal</summary>
-          <div style="margin-top:10px;">
+        <details style="margin-top: 14px; font-size: 0.9rem;">
+          <summary style="font-weight: 800; color: var(--accent); cursor: pointer; padding: 4px 0;">+ Set a New Wishlist Goal</summary>
+          <div style="margin-top: 12px;">
             <div class="form-group">
               <label for="goalTitleInput">What are you saving for?</label>
-              <input type="text" id="goalTitleInput" placeholder="e.g. Lego Star Wars set">
+              <input type="text" id="goalTitleInput" placeholder="e.g. Lego Set, Skateboard, Game Pass">
             </div>
             <div class="form-group">
-              <label for="goalAmountInput">How much does it cost? (<span class="currencySymbol">Rs. </span>)</label>
-              <input type="number" id="goalAmountInput" placeholder="e.g. 3500">
+              <label for="goalAmountInput">Target Price (<span class="currencySymbol">Rs. </span>)</label>
+              <input type="number" id="goalAmountInput" placeholder="e.g. 2500">
             </div>
-            <button class="btn-purple" onclick="addGoal()">Save Goal</button>
+            <button class="btn btn-purple" onclick="addGoal()">🚀 Create Goal Target</button>
           </div>
         </details>
       </div>
 
-      <!-- Kid Analytics Card -->
-      <div class="card" style="padding-bottom: 14px;">
+      <!-- Interactive Analytics Slicer -->
+      <div class="card">
         <div class="slicer-chips">
           <button class="slicer active" onclick="setChildTimeframe(this, 'ALL')">All Time</button>
           <button class="slicer" onclick="setChildTimeframe(this, 'WEEK')">This Week</button>
@@ -124,52 +289,52 @@
         </div>
 
         <div class="kid-stats-grid">
-          <div class="kid-stat-box" style="border-top: 3px solid #2b6cb0;">
-            <div class="kid-stat-title">Chores Earned</div>
-            <div class="kid-stat-val" id="kidChoreStat" style="color:#2b6cb0;">Rs. 0</div>
+          <div class="kid-stat-box" style="border-top: 3px solid #6366f1;">
+            <div class="kid-stat-title">🧹 Chores Earned</div>
+            <div class="kid-stat-val" id="kidChoreStat" style="color:#818cf8;">Rs. 0</div>
           </div>
-          <div class="kid-stat-box" style="border-top: 3px solid #38a169;">
-            <div class="kid-stat-title">Rewards / Bonuses</div>
-            <div class="kid-stat-val" id="kidRewardStat" style="color:#38a169;">Rs. 0</div>
+          <div class="kid-stat-box" style="border-top: 3px solid #10b981;">
+            <div class="kid-stat-title">🎁 Rewards / Gifts</div>
+            <div class="kid-stat-val" id="kidRewardStat" style="color:#34d399;">Rs. 0</div>
           </div>
-          <div class="kid-stat-box" style="border-top: 3px solid #e53e3e;">
-            <div class="kid-stat-title">Penalties</div>
-            <div class="kid-stat-val" id="kidPenaltyStat" style="color:#e53e3e;">Rs. 0</div>
+          <div class="kid-stat-box" style="border-top: 3px solid #ef4444;">
+            <div class="kid-stat-title">🛑 Penalties</div>
+            <div class="kid-stat-val" id="kidPenaltyStat" style="color:#f87171;">Rs. 0</div>
           </div>
-          <div class="kid-stat-box" style="border-top: 3px solid #718096;">
-            <div class="kid-stat-title">Money Spent</div>
-            <div class="kid-stat-val" id="kidSpentStat" style="color:#4a5568;">Rs. 0</div>
+          <div class="kid-stat-box" style="border-top: 3px solid #64748b;">
+            <div class="kid-stat-title">🛍️ Spent</div>
+            <div class="kid-stat-val" id="kidSpentStat" style="color:#cbd5e1;">Rs. 0</div>
           </div>
         </div>
       </div>
 
-      <!-- Claim Finished Chore -->
-      <div class="card">
-        <h3>I Finished a Chore!</h3>
+      <!-- Chore Submission Card -->
+      <div class="card" style="border-left: 4px solid var(--success);">
+        <h3>✅ Complete a Chore</h3>
         <div class="form-group">
-          <label for="choreSelect">Choose Chore</label>
-          <select id="choreSelect"><option>Loading...</option></select>
+          <label for="choreSelect">Pick Finished Task</label>
+          <select id="choreSelect"><option>Loading tasks...</option></select>
         </div>
-        <button class="btn-green" onclick="claimChore()">Ask Parents to Check</button>
+        <button class="btn btn-green" onclick="claimChore()">⭐ Submit for Parent Check</button>
       </div>
 
-      <!-- Log Expense -->
+      <!-- Expense Tracking Card -->
       <div class="card">
-        <h3>I Spent Money</h3>
+        <h3>💳 Log Money Spent</h3>
         <div class="form-group">
           <label for="spendAmt">Amount Spent (<span class="currencySymbol">Rs. </span>)</label>
-          <input type="number" id="spendAmt" placeholder="e.g. 100">
+          <input type="number" id="spendAmt" placeholder="e.g. 200">
         </div>
         <div class="form-group">
           <label for="spendDesc">What did you buy?</label>
-          <input type="text" id="spendDesc" placeholder="e.g. Book, treats">
+          <input type="text" id="spendDesc" placeholder="e.g. Books, comic, treats">
         </div>
-        <button class="btn-blue" onclick="logSpending()">Subtract from Savings</button>
+        <button class="btn btn-blue" onclick="logSpending()">Subtract from Balance</button>
       </div>
 
-      <!-- Transactions Ledger -->
+      <!-- Ledger Feed with Chips -->
       <div class="card">
-        <h3>Past Transactions</h3>
+        <h3>📜 Past Activities</h3>
         <div class="filter-chips">
           <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
           <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
@@ -179,12 +344,10 @@
         </div>
 
         <table>
-          <thead>
-            <tr><th>Activity</th><th style="text-align:right;">Amount</th></tr>
-          </thead>
+          <thead><tr><th>Activity</th><th style="text-align:right;">Amount</th></tr></thead>
           <tbody id="txBody"></tbody>
         </table>
-        <button class="btn-gray" onclick="logout()">Lock Screen</button>
+        <button class="btn btn-gray" style="margin-top: 14px;" onclick="logout()">🔒 Lock Screen</button>
       </div>
 
     </div>
@@ -201,6 +364,25 @@
     let currentFilter = 'ALL';
     let currentChildTimeframe = 'ALL';
 
+    function triggerConfetti() {
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (e) {}
+    }
+
+    function calculateRank(balance) {
+      if (balance >= 20000) return "👑 Wealth Tycoon";
+      if (balance >= 10000) return "💎 Diamond Saver";
+      if (balance >= 5000) return "🌟 Gold Stasher";
+      if (balance >= 2000) return "🚀 Master Builder";
+      if (balance >= 500) return "🌱 Junior Earner";
+      return "🪙 Novice Saver";
+    }
+
     function init() {
       const storedToken = sessionStorage.getItem('child_token');
       if (storedToken && storedToken !== 'undefined' && storedToken !== 'null' && storedToken.trim() !== '') {
@@ -209,9 +391,8 @@
       }
 
       sessionStorage.removeItem('child_token');
-
       const select = document.getElementById('childNameSelect');
-      select.innerHTML = '<option value="">Loading names...</option>';
+      select.innerHTML = '<option value="">Loading heroes...</option>';
 
       fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`, {
         method: "GET",
@@ -227,7 +408,7 @@
         if (data.currency) activeCurrency = data.currency;
 
         if (!data.children || data.children.length === 0) {
-          select.innerHTML = '<option value="">No children found</option>';
+          select.innerHTML = '<option value="">No children configured</option>';
           return;
         }
 
@@ -237,9 +418,8 @@
         });
       })
       .catch(err => {
-        console.error("Fetch failed:", err);
         select.innerHTML = '<option value="">Error loading names</option>';
-        alert("Could not load names: " + err.message);
+        alert("Connection error: " + err.message);
       });
     }
 
@@ -259,6 +439,7 @@
           sessionStorage.setItem('child_token', res.token);
           document.getElementById('loginCard').style.display = 'none';
           loadChildData(res.token);
+          triggerConfetti();
         } else {
           alert(res.error || 'Incorrect PIN');
           document.getElementById('pinInput').value = '';
@@ -290,8 +471,9 @@
 
         document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
         document.getElementById('balanceDisplay').innerText = activeCurrency + currentChildBalance.toFixed(0);
+        document.getElementById('rankBadge').innerText = calculateRank(currentChildBalance);
 
-        // Denied Feedback
+        // Denied feedback
         const deniedBox = document.getElementById('deniedSection');
         const deniedList = document.getElementById('deniedList');
         deniedList.innerHTML = '';
@@ -327,7 +509,7 @@
       container.innerHTML = '';
 
       if (childGoals.length === 0) {
-        container.innerHTML = '<p style="margin:0; color:#718096; font-size:0.85rem;">No goals set yet. Set a goal below to start saving!</p>';
+        container.innerHTML = '<p style="margin:0; color:var(--text-muted); font-size:0.85rem;">No goals set yet! Tap below to add your first goal.</p>';
         return;
       }
 
@@ -338,17 +520,20 @@
         container.innerHTML += `
           <div class="goal-card">
             <div class="goal-header">
-              <span class="goal-title">${g.title}</span>
-              <span style="font-size:0.8rem; font-weight:700; color:${achieved ? '#38a169' : '#805ad5'};">
-                ${achieved ? '🎉 Ready to Buy!' : pct + '% Saved'}
-              </span>
+              <span class="goal-title">🎯 ${g.title}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.8rem; font-weight:800; color:${achieved ? 'var(--success)' : 'var(--accent)'};">
+                  ${achieved ? '🎉 Ready to Buy!' : pct + '% Saved'}
+                </span>
+                <button class="btn-delete-goal" onclick="deleteGoal('${g.id}')" title="Delete Goal">✕</button>
+              </div>
             </div>
             <div class="goal-progress-bg">
               <div class="goal-progress-fill" style="width: ${pct}%;"></div>
             </div>
             <div class="goal-stats">
-              <span>Goal: ${activeCurrency}${g.targetAmount}</span>
-              <span>${achieved ? 'You have enough!' : 'Need ' + activeCurrency + Math.max(0, g.targetAmount - currentChildBalance)}</span>
+              <span>Target: ${activeCurrency}${g.targetAmount}</span>
+              <span>${achieved ? 'Target Unlocked!' : 'Need ' + activeCurrency + Math.max(0, g.targetAmount - currentChildBalance)}</span>
             </div>
           </div>
         `;
@@ -373,8 +558,22 @@
       .then(() => {
         document.getElementById('goalTitleInput').value = '';
         document.getElementById('goalAmountInput').value = '';
+        triggerConfetti();
         loadChildData(token);
       });
+    }
+
+    function deleteGoal(goalId) {
+      if (!confirm("Remove this goal from your list?")) return;
+      const token = sessionStorage.getItem('child_token');
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'deleteGoal', token, goalId })
+      })
+      .then(res => res.json())
+      .then(() => loadChildData(token));
     }
 
     function setChildTimeframe(btn, tf) {
@@ -399,10 +598,7 @@
         startTime = new Date(now.getFullYear(), 0, 1).getTime();
       }
 
-      let choreSum = 0;
-      let rewardSum = 0;
-      let penaltySum = 0;
-      let spendSum = 0;
+      let choreSum = 0, rewardSum = 0, penaltySum = 0, spendSum = 0;
 
       rawHistory.forEach(tx => {
         const txTime = tx.timestamp || new Date(tx.date).getTime();
@@ -440,7 +636,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#a0aec0; padding:16px;">No transactions found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-muted); padding:16px;">No records found.</td></tr>';
         return;
       }
 
@@ -455,11 +651,11 @@
         tbody.innerHTML += `<tr>
           <td>
             <span class="type-badge ${badgeClass}">${tx.type}</span>
-            <strong>${tx.desc}</strong>
-            <div style="font-size:0.75rem; color:#a0aec0; margin-top:2px;">${tx.date}</div>
+            <strong style="color:#f8fafc;">${tx.desc}</strong>
+            <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${tx.date}</div>
           </td>
           <td style="text-align:right;" class="${isPos ? 'pos' : 'neg'}">
-            ${isPos ? '+' : ''}${activeCurrency}${Math.abs(tx.amount).toFixed(0)}
+            ${isPos ? '+' : '-'}${activeCurrency}${Math.abs(tx.amount).toFixed(0)}
           </td>
         </tr>`;
       });
@@ -478,16 +674,17 @@
       .then(res => res.json())
       .then(res => {
         if (res.error) throw new Error(res.error);
-        alert('Sent for parent approval! Parents notified via email.');
+        triggerConfetti();
+        alert('🎉 Mission Submitted! Parents have been notified to check and approve.');
       })
-      .catch(err => alert("Chore submission error: " + err.message));
+      .catch(err => alert("Chore error: " + err.message));
     }
 
     function logSpending() {
       const token = sessionStorage.getItem('child_token');
       const amount = document.getElementById('spendAmt').value;
       const desc = document.getElementById('spendDesc').value;
-      if (!amount || !desc) return alert('Enter amount and item name');
+      if (!amount || !desc) return alert('Enter amount and what you bought.');
 
       fetch(SCRIPT_URL, {
         method: 'POST',
