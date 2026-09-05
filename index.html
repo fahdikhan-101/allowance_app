@@ -8,19 +8,28 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: #f7fafc; margin: 0; padding: 16px; color: #2d3748; }
     .container { max-width: 480px; margin: 0 auto; }
-    .card { background: white; border-radius: 16px; padding: 22px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+    .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
     .balance-val { font-size: 3.2rem; font-weight: 800; color: #38a169; margin: 4px 0; text-align: center; }
     .subtitle { text-align: center; color: #a0aec0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
-    h3 { margin-top: 0; font-size: 1.15rem; color: #2b6cb0; }
+    h3 { margin-top: 0; font-size: 1.15rem; color: #2b6cb0; margin-bottom: 12px; }
     
     .form-group { margin-bottom: 12px; text-align: left; }
     label { display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
-    input, select { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+    input, select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
     
-    button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; }
     .btn-green { background: #38a169; }
     .btn-blue { background: #3182ce; }
+    .btn-purple { background: #805ad5; }
     .btn-gray { background: #718096; margin-top: 8px; }
+
+    /* Saving Goal Progress Cards */
+    .goal-card { background: #f7fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+    .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .goal-title { font-weight: 700; font-size: 0.95rem; color: #2d3748; }
+    .goal-progress-bg { background: #edf2f7; border-radius: 10px; height: 14px; overflow: hidden; width: 100%; margin: 6px 0; }
+    .goal-progress-fill { background: linear-gradient(90deg, #48bb78, #38a169); height: 100%; border-radius: 10px; transition: width 0.4s ease; }
+    .goal-stats { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: #718096; }
 
     /* Timeframe Slicer Chips */
     .slicer-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; justify-content: center; }
@@ -28,7 +37,7 @@
     .slicer.active { background: #2b6cb0; color: white; border-color: #2b6cb0; }
 
     /* Kid Analytics Grid */
-    .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
     .kid-stat-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; }
     .kid-stat-title { font-size: 0.72rem; font-weight: 700; color: #718096; text-transform: uppercase; }
     .kid-stat-val { font-size: 1.35rem; font-weight: 800; margin: 4px 0 0; }
@@ -84,6 +93,27 @@
         <div id="deniedList"></div>
       </div>
 
+      <!-- SAVING GOALS & TARGETS -->
+      <div class="card" style="border-left: 5px solid #805ad5;">
+        <h3>🎯 My Saving Goals</h3>
+        <div id="goalsContainer">Loading goals...</div>
+        
+        <details style="margin-top:12px; font-size:0.9rem;">
+          <summary style="font-weight:700; color:#805ad5; cursor:pointer;">+ Set a New Saving Goal</summary>
+          <div style="margin-top:10px;">
+            <div class="form-group">
+              <label for="goalTitleInput">What are you saving for?</label>
+              <input type="text" id="goalTitleInput" placeholder="e.g. Lego Star Wars set">
+            </div>
+            <div class="form-group">
+              <label for="goalAmountInput">How much does it cost? (<span class="currencySymbol">Rs. </span>)</label>
+              <input type="number" id="goalAmountInput" placeholder="e.g. 3500">
+            </div>
+            <button class="btn-purple" onclick="addGoal()">Save Goal</button>
+          </div>
+        </details>
+      </div>
+
       <!-- Kid Analytics Card -->
       <div class="card" style="padding-bottom: 14px;">
         <div class="slicer-chips">
@@ -137,10 +167,9 @@
         <button class="btn-blue" onclick="logSpending()">Subtract from Savings</button>
       </div>
 
-      <!-- Transactions Ledger with Filter Bar -->
+      <!-- Transactions Ledger -->
       <div class="card">
         <h3>Past Transactions</h3>
-        
         <div class="filter-chips">
           <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
           <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
@@ -163,19 +192,23 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Wj53kPwz2NSIaJ2qRNke2smVR6ADuiv_mkROOsO1aT3pT5v1undfnKBiUtRpcR1K/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9XQECAp7VLwD0Pw2AiKC553q-W7t2RsOvBqrbdyDDu4WxZO5hSphCFMJE2K4oyls/exec";
 
     let activeCurrency = "Rs. ";
     let rawHistory = [];
+    let childGoals = [];
+    let currentChildBalance = 0;
     let currentFilter = 'ALL';
     let currentChildTimeframe = 'ALL';
 
     function init() {
       const storedToken = sessionStorage.getItem('child_token');
-      if (storedToken) {
+      if (storedToken && storedToken !== 'undefined' && storedToken !== 'null' && storedToken.trim() !== '') {
         loadChildData(storedToken);
         return;
       }
+
+      sessionStorage.removeItem('child_token');
 
       const select = document.getElementById('childNameSelect');
       select.innerHTML = '<option value="">Loading names...</option>';
@@ -248,13 +281,15 @@
         }
         if (data.currency) activeCurrency = data.currency;
         rawHistory = data.history || [];
+        childGoals = data.goals || [];
+        currentChildBalance = Number(data.balance) || 0;
 
         document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = activeCurrency);
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
 
         document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
-        document.getElementById('balanceDisplay').innerText = activeCurrency + Number(data.balance).toFixed(0);
+        document.getElementById('balanceDisplay').innerText = activeCurrency + currentChildBalance.toFixed(0);
 
         // Denied Feedback
         const deniedBox = document.getElementById('deniedSection');
@@ -280,10 +315,66 @@
           });
         }
 
+        renderGoals();
         renderChildAnalytics();
         renderTransactions();
       })
       .catch(err => alert("Data Load Error: " + err.message));
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goalsContainer');
+      container.innerHTML = '';
+
+      if (childGoals.length === 0) {
+        container.innerHTML = '<p style="margin:0; color:#718096; font-size:0.85rem;">No goals set yet. Set a goal below to start saving!</p>';
+        return;
+      }
+
+      childGoals.forEach(g => {
+        const pct = Math.min(Math.round((currentChildBalance / g.targetAmount) * 100), 100);
+        const achieved = currentChildBalance >= g.targetAmount;
+
+        container.innerHTML += `
+          <div class="goal-card">
+            <div class="goal-header">
+              <span class="goal-title">${g.title}</span>
+              <span style="font-size:0.8rem; font-weight:700; color:${achieved ? '#38a169' : '#805ad5'};">
+                ${achieved ? '🎉 Ready to Buy!' : pct + '% Saved'}
+              </span>
+            </div>
+            <div class="goal-progress-bg">
+              <div class="goal-progress-fill" style="width: ${pct}%;"></div>
+            </div>
+            <div class="goal-stats">
+              <span>Goal: ${activeCurrency}${g.targetAmount}</span>
+              <span>${achieved ? 'You have enough!' : 'Need ' + activeCurrency + Math.max(0, g.targetAmount - currentChildBalance)}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addGoal() {
+      const title = document.getElementById('goalTitleInput').value.trim();
+      const targetAmount = document.getElementById('goalAmountInput').value;
+      const token = sessionStorage.getItem('child_token');
+
+      if (!title || !targetAmount || Number(targetAmount) <= 0) {
+        return alert("Please enter a goal item and target price.");
+      }
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'createGoal', token, title, targetAmount })
+      })
+      .then(res => res.json())
+      .then(() => {
+        document.getElementById('goalTitleInput').value = '';
+        document.getElementById('goalAmountInput').value = '';
+        loadChildData(token);
+      });
     }
 
     function setChildTimeframe(btn, tf) {
@@ -387,7 +478,7 @@
       .then(res => res.json())
       .then(res => {
         if (res.error) throw new Error(res.error);
-        alert('Sent for parent approval!');
+        alert('Sent for parent approval! Parents notified via email.');
       })
       .catch(err => alert("Chore submission error: " + err.message));
     }
@@ -401,7 +492,7 @@
       fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'submitExpense', token: token, amount: amount, desc: desc })
+        body: JSON.stringify({ action: 'submitExpense', token, amount, desc })
       })
       .then(res => res.json())
       .then(res => {
