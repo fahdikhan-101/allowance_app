@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Pocket Money</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #f7fafc; margin: 0; padding: 16px; color: #2d3748; }
+    .container { max-width: 460px; margin: 0 auto; }
+    .card { background: white; border-radius: 16px; padding: 22px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+    .balance-val { font-size: 3.2rem; font-weight: 800; color: #38a169; margin: 4px 0; text-align: center; }
+    .subtitle { text-align: center; color: #a0aec0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+    h3 { margin-top: 0; font-size: 1.15rem; color: #2b6cb0; }
+    input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+    button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; }
+    .btn-green { background: #38a169; }
+    .btn-blue { background: #3182ce; }
+    .btn-gray { background: #718096; margin-top: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #edf2f7; }
+    .pos { color: #38a169; font-weight: 700; }
+    .neg { color: #e53e3e; font-weight: 700; }
+    .denied-banner { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- LOGIN SCREEN -->
+    <div class="card" id="loginCard">
+      <h2 style="margin-top:0; text-align:center; color:#2b6cb0;">Kid Sign In</h2>
+      <label style="font-size:0.85rem; font-weight:700; color:#718096; display:block; margin-bottom:6px;">Who is saving today?</label>
+      <select id="childNameSelect"><option value="">Loading names...</option></select>
+      <input type="password" id="pinInput" placeholder="Enter 4-Digit PIN" maxlength="6" style="text-align:center; letter-spacing:4px; font-size:1.4rem;">
+      <button class="btn-blue" onclick="attemptLogin()">Unlock My Savings</button>
+    </div>
+
+    <!-- AUTHENTICATED DASHBOARD -->
+    <div id="dashboard" style="display: none;">
+      <div class="card">
+        <div class="subtitle" id="childGreeting">Total Savings</div>
+        <div class="balance-val" id="balanceDisplay">$0.00</div>
+      </div>
+
+      <div class="denied-banner" id="deniedSection" style="display: none;">
+        <strong style="color: #c53030;">Note on recent chores:</strong>
+        <div id="deniedList"></div>
+      </div>
+
+      <div class="card">
+        <h3>I Finished a Chore!</h3>
+        <select id="choreSelect"><option>Loading chores...</option></select>
+        <button class="btn-green" onclick="claimChore()">Ask Parents to Check</button>
+      </div>
+
+      <div class="card">
+        <h3>I Spent Money</h3>
+        <input type="number" id="spendAmt" step="0.01" placeholder="Amount ($)">
+        <input type="text" id="spendDesc" placeholder="What did you buy?">
+        <button class="btn-blue" onclick="logSpending()">Subtract from Savings</button>
+      </div>
+
+      <div class="card">
+        <h3>Past Transactions</h3>
+        <table>
+          <thead><tr><th>Date</th><th>Item</th><th>Amount</th></tr></thead>
+          <tbody id="txBody"></tbody>
+        </table>
+        <button class="btn-gray" onclick="logout()">Lock Screen</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // PASTE YOUR GOOGLE APPS SCRIPT /exec URL HERE:
+    const SCRIPT_URL = "YOUR_APPS_SCRIPT_EXEC_URL_HERE";
+
+    function init() {
+      const storedToken = sessionStorage.getItem('child_token');
+      if (storedToken) {
+        loadChildData(storedToken);
+      } else {
+        fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`)
+          .then(res => res.json())
+          .then(data => {
+            const select = document.getElementById('childNameSelect');
+            select.innerHTML = '<option value="">-- Choose Name --</option>';
+            data.children.forEach(c => {
+              select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+          });
+      }
+    }
+
+    function attemptLogin() {
+      const name = document.getElementById('childNameSelect').value;
+      const pin = document.getElementById('pinInput').value;
+      if (!name || !pin) return alert('Select your name and enter your PIN.');
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'childLogin', childName: name, pin: pin })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          sessionStorage.setItem('child_token', res.token);
+          document.getElementById('loginCard').style.display = 'none';
+          loadChildData(res.token);
+        } else {
+          alert(res.error || 'Incorrect PIN');
+          document.getElementById('pinInput').value = '';
+        }
+      });
+    }
+
+    function loadChildData(token) {
+      fetch(`${SCRIPT_URL}?format=json&childToken=${encodeURIComponent(token)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            logout();
+            return;
+          }
+          document.getElementById('loginCard').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+
+          document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
+          document.getElementById('balanceDisplay').innerText = '$' + Number(data.balance).toFixed(2);
+
+          // Denied feedback
+          const deniedBox = document.getElementById('deniedSection');
+          const deniedList = document.getElementById('deniedList');
+          deniedList.innerHTML = '';
+          if (data.deniedChores && data.deniedChores.length > 0) {
+            deniedBox.style.display = 'block';
+            data.deniedChores.slice(0, 2).forEach(d => {
+              deniedList.innerHTML += `<div style="margin-top:4px;"><strong>${d.title}</strong>: "${d.reason}"</div>`;
+            });
+          }
+
+          // Chores catalog
+          const choreSel = document.getElementById('choreSelect');
+          choreSel.innerHTML = '';
+          data.chores.forEach(c => {
+            choreSel.innerHTML += `<option value="${c.id}">${c.title} (+$${Number(c.reward).toFixed(2)})</option>`;
+          });
+
+          // Ledger
+          const tbody = document.getElementById('txBody');
+          tbody.innerHTML = '';
+          data.history.forEach(tx => {
+            const isPos = tx.amount >= 0;
+            tbody.innerHTML += `<tr>
+              <td>${tx.date}</td>
+              <td>${tx.desc}</td>
+              <td class="${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}</td>
+            </tr>`;
+          });
+        });
+    }
+
+    function claimChore() {
+      const token = sessionStorage.getItem('child_token');
+      const choreId = document.getElementById('choreSelect').value;
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'submitChore', token, choreId })
+      }).then(() => alert('Sent for parent approval!'));
+    }
+
+    function logSpending() {
+      const token = sessionStorage.getItem('child_token');
+      const amount = document.getElementById('spendAmt').value;
+      const desc = document.getElementById('spendDesc').value;
+      if (!amount || !desc) return alert('Enter amount and item name');
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'submitExpense', token, amount, desc })
+      }).then(() => {
+        document.getElementById('spendAmt').value = '';
+        document.getElementById('spendDesc').value = '';
+        loadChildData(token);
+      });
+    }
+
+    function logout() {
+      sessionStorage.removeItem('child_token');
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('loginCard').style.display = 'block';
+      document.getElementById('pinInput').value = '';
+      init();
+    }
+
+    init();
+  </script>
+</body>
+</html>
