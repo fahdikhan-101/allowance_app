@@ -131,22 +131,41 @@
     let rawHistory = [];
     let currentFilter = 'ALL';
 
-    function init() {
+function init() {
+      // Clear any stale invalid session to force a clean login check
       const storedToken = sessionStorage.getItem('child_token');
       if (storedToken) {
         loadChildData(storedToken);
-      } else {
-        fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.currency) activeCurrency = data.currency;
-            const select = document.getElementById('childNameSelect');
-            select.innerHTML = '<option value="">-- Choose Name --</option>';
-            data.children.forEach(c => {
-              select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-            });
-          });
+        return;
       }
+
+      const select = document.getElementById('childNameSelect');
+      select.innerHTML = '<option value="">Loading names...</option>';
+
+      fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`)
+        .then(res => {
+          if (!res.ok) throw new Error("HTTP error " + res.status);
+          return res.json();
+        })
+        .then(data => {
+          if (data.error) throw new Error(data.error);
+          if (data.currency) activeCurrency = data.currency;
+
+          if (!data.children || data.children.length === 0) {
+            select.innerHTML = '<option value="">No children found in Sheet</option>';
+            return;
+          }
+
+          select.innerHTML = '<option value="">-- Choose Name --</option>';
+          data.children.forEach(c => {
+            select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+          });
+        })
+        .catch(err => {
+          console.error("Init Error:", err);
+          select.innerHTML = '<option value="">Error loading names</option>';
+          alert("Could not load children list: " + err.message);
+        });
     }
 
     function attemptLogin() {
