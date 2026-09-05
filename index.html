@@ -35,11 +35,11 @@
       max-width: 500px;
       margin: 0 auto;
       width: 100%;
-      padding: 16px 16px 85px; /* bottom padding for sticky bar */
+      padding: 16px 16px 85px;
       flex: 1;
     }
 
-    /* Sticky Top Header */
+    /* Sticky Header */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -86,7 +86,7 @@
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
-    /* Balance Hero Banner */
+    /* Balance Card */
     .balance-card {
       text-align: center;
       background: linear-gradient(135deg, rgba(79, 70, 229, 0.35) 0%, rgba(236, 72, 153, 0.2) 100%);
@@ -144,10 +144,11 @@
     .btn-blue { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
     .btn-purple { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3); }
 
-    /* Tabs & Navigation */
+    /* Tab Views */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
+    /* Bottom Navigation */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -198,7 +199,7 @@
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #fca5a5;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-radius: 8px;
       padding: 4px 8px;
     }
@@ -217,13 +218,13 @@
     }
     .goal-stats { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
 
-    /* Stats Grid */
+    /* Analytics Mini-Cards */
     .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
     .kid-stat-box { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px; text-align: center; }
     .kid-stat-title { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
     .kid-stat-val { font-size: 1.25rem; font-weight: 900; margin: 3px 0 0; }
 
-    /* Chips */
+    /* Filter / Timeframe Chips */
     .slicer-chips, .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
     .slicer, .chip {
       background: rgba(255, 255, 255, 0.05);
@@ -239,7 +240,7 @@
     .slicer.active { background: var(--primary); color: white; border-color: var(--primary); }
     .chip.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
 
-    /* Activity Feed & Pagination */
+    /* Activity Feed */
     .tx-item {
       display: flex;
       justify-content: space-between;
@@ -267,7 +268,7 @@
   <!-- AUTHENTICATED TOP HEADER -->
   <div class="top-bar" id="topHeader" style="display: none;">
     <div class="user-profile">
-      <div class="user-avatar" id="avatarInitial">A</div>
+      <div class="user-avatar" id="avatarInitial">H</div>
       <div class="user-details">
         <span class="user-name" id="childHeaderName">Hero</span>
         <span class="user-rank" id="childHeaderRank">Novice</span>
@@ -305,13 +306,22 @@
         <div class="balance-val" id="balanceDisplay">Rs. 0</div>
       </div>
 
-      <!-- Denied Chores Alert -->
+      <!-- Top Goal Spotlight Preview on Home Screen -->
+      <div class="card" id="homeGoalSpotlight" style="border-left: 4px solid var(--accent); display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h3 style="margin: 0; font-size: 0.95rem;">🎯 Top Wishlist Target</h3>
+          <button onclick="switchNavTab('tab-goals', document.querySelectorAll('.nav-item')[1])" style="background: none; border: none; color: #a5b4fc; font-size: 0.75rem; font-weight: 700; cursor: pointer;">View All →</button>
+        </div>
+        <div id="homeGoalContent"></div>
+      </div>
+
+      <!-- Denied Chores Notice Banner -->
       <div class="card" id="deniedSection" style="display: none; border-left: 4px solid var(--danger); background: rgba(239, 68, 68, 0.1);">
         <strong style="color: #fca5a5; font-size: 0.85rem;">⚠️ Note on Recent Chores:</strong>
         <div id="deniedList" style="margin-top: 4px; font-size: 0.82rem; color: #cbd5e1;"></div>
       </div>
 
-      <!-- Performance Slicers -->
+      <!-- Performance Slicers & Stats -->
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <h3 style="margin:0;">📊 Savings Stats</h3>
@@ -347,15 +357,15 @@
     <!-- TAB 2: 🎯 GOALS -->
     <div id="tab-goals" class="tab-content">
       <div class="card" style="border-left: 4px solid var(--accent);">
-        <h3>🎯 My Wishlist Targets</h3>
+        <h3>🎯 My Saving Targets</h3>
         <div id="goalsContainer">Loading goals...</div>
       </div>
 
       <div class="card">
-        <h3>+ Set New Goal</h3>
+        <h3>+ Set New Wishlist Goal</h3>
         <div class="form-group">
           <label for="goalTitleInput">Item Name</label>
-          <input type="text" id="goalTitleInput" placeholder="e.g. Lego Star Wars, Rollerblades">
+          <input type="text" id="goalTitleInput" placeholder="e.g. Lego Star Wars, Game Pass">
         </div>
         <div class="form-group">
           <label for="goalAmountInput">Target Price (<span class="currencySymbol">Rs. </span>)</label>
@@ -395,7 +405,7 @@
     <!-- TAB 4: 📜 ACTIVITY FEED -->
     <div id="tab-activity" class="tab-content">
       <div class="card">
-        <h3>📜 Ledger Feed</h3>
+        <h3>📜 Past Activities</h3>
         <div class="filter-chips">
           <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
           <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
@@ -437,7 +447,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8Wj53kPwz2NSIaJ2qRNke2smVR6ADuiv_mkROOsO1aT3pT5v1undfnKBiUtRpcR1K/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9XQECAp7VLwD0Pw2AiKC553q-W7t2RsOvBqrbdyDDu4WxZO5hSphCFMJE2K4oyls/exec";
 
     let activeCurrency = "Rs. ";
     let rawHistory = [];
@@ -549,7 +559,12 @@
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('topHeader').style.display = 'flex';
         document.getElementById('bottomNav').style.display = 'flex';
-        document.getElementById('tab-home').classList.add('active');
+
+        // Keep current active tab intact if already navigated
+        const anyActiveTab = document.querySelector('.tab-content.active');
+        if (!anyActiveTab) {
+          document.getElementById('tab-home').classList.add('active');
+        }
 
         // Header User Info
         document.getElementById('avatarInitial').innerText = (data.name || 'H').charAt(0).toUpperCase();
@@ -592,13 +607,42 @@
 
     function renderGoals() {
       const container = document.getElementById('goalsContainer');
+      const homeSpotlight = document.getElementById('homeGoalSpotlight');
+      const homeContent = document.getElementById('homeGoalContent');
+      
       container.innerHTML = '';
 
       if (childGoals.length === 0) {
         container.innerHTML = '<p style="margin:0; color:var(--text-muted); font-size:0.85rem;">No goals yet. Add one below!</p>';
+        if (homeSpotlight) homeSpotlight.style.display = 'none';
         return;
       }
 
+      // Spotlight top goal on the Home Screen
+      if (homeSpotlight && homeContent) {
+        const topGoal = childGoals[0];
+        const topPct = Math.min(Math.round((currentChildBalance / topGoal.targetAmount) * 100), 100);
+        const topAchieved = currentChildBalance >= topGoal.targetAmount;
+
+        homeSpotlight.style.display = 'block';
+        homeContent.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; font-size:0.95rem; color:#fff;">${topGoal.title}</span>
+            <span style="font-size:0.8rem; font-weight:800; color:${topAchieved ? 'var(--success)' : 'var(--accent)'};">
+              ${topAchieved ? '🎉 Ready to Buy!' : topPct + '%'}
+            </span>
+          </div>
+          <div class="goal-progress-bg">
+            <div class="goal-progress-fill" style="width: ${topPct}%;"></div>
+          </div>
+          <div class="goal-stats">
+            <span>Target: ${activeCurrency}${topGoal.targetAmount}</span>
+            <span>${topAchieved ? 'Ready!' : 'Need ' + activeCurrency + Math.max(0, topGoal.targetAmount - currentChildBalance)}</span>
+          </div>
+        `;
+      }
+
+      // Full goals list in Goals tab
       childGoals.forEach(g => {
         const pct = Math.min(Math.round((currentChildBalance / g.targetAmount) * 100), 100);
         const achieved = currentChildBalance >= g.targetAmount;
