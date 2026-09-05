@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>My PiggyBank Hub</title>
-  <!-- Canvas Confetti for Reward Celebrations -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
@@ -23,77 +22,100 @@
 
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body {
-      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 70%);
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 75%);
       margin: 0;
-      padding: 16px;
+      padding: 0;
       color: var(--text);
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    .container { max-width: 480px; margin: 0 auto; padding-bottom: 30px; }
-
-    /* Glassmorphism Card Style */
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-      position: relative;
-      overflow: hidden;
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 16px 16px 85px; /* bottom padding for sticky bar */
+      flex: 1;
     }
 
-    /* Rank & Level Pill */
-    .rank-pill {
-      display: inline-flex;
+    /* Sticky Top Header */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      background: rgba(99, 102, 241, 0.2);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #a5b4fc;
-      padding: 5px 14px;
-      border-radius: 9999px;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .user-profile { display: flex; align-items: center; gap: 8px; }
+    .user-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem; color: #fff;
+    }
+    .user-details { display: flex; flex-direction: column; }
+    .user-name { font-weight: 800; font-size: 0.95rem; }
+    .user-rank { font-size: 0.72rem; color: #a5b4fc; font-weight: 700; text-transform: uppercase; }
+    .btn-lock {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 10px;
+      padding: 6px 12px;
       font-size: 0.8rem;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
+      cursor: pointer;
     }
 
-    /* Balance Hero Display */
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Balance Hero Banner */
     .balance-card {
       text-align: center;
-      background: linear-gradient(135deg, rgba(79, 70, 229, 0.4) 0%, rgba(236, 72, 153, 0.25) 100%);
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.35) 0%, rgba(236, 72, 153, 0.2) 100%);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 26px 20px;
+      padding: 24px 16px;
     }
-    .balance-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .balance-title { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
     .balance-val {
-      font-size: 3.4rem;
+      font-size: 3.2rem;
       font-weight: 900;
       color: #ffffff;
-      margin: 8px 0 4px;
+      margin: 6px 0 2px;
       letter-spacing: -1px;
-      text-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+      text-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
     }
 
-    h3 { margin: 0 0 14px; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #ffffff; }
+    h3 { margin: 0 0 12px; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #ffffff; }
 
-    .form-group { margin-bottom: 14px; text-align: left; }
-    label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    
+    /* Form Fields */
+    .form-group { margin-bottom: 12px; text-align: left; }
+    label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
     input, select {
       width: 100%;
-      padding: 14px 16px;
+      padding: 12px 14px;
       background: rgba(15, 23, 42, 0.6);
       border: 1.5px solid var(--card-border);
-      border-radius: 14px;
-      font-size: 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
       color: #fff;
-      transition: all 0.2s;
     }
     input:focus, select:focus {
       outline: none;
@@ -102,13 +124,13 @@
     }
     select option { background: #1e293b; color: #fff; }
 
-    /* High-Energy Glow Buttons */
+    /* Buttons */
     button.btn {
       width: 100%;
-      padding: 14px;
+      padding: 13px;
       border: none;
-      border-radius: 14px;
-      font-size: 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
       color: white;
@@ -116,171 +138,184 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     button.btn:active { transform: scale(0.98); }
-    .btn-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
-    .btn-blue { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-    .btn-purple { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
-    .btn-gray { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); color: var(--text-muted); }
+    .btn-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+    .btn-blue { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+    .btn-purple { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3); }
 
-    /* Saving Goals Cards */
+    /* Tabs & Navigation */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      gap: 4px;
+      padding: 8px 14px;
+      transition: color 0.2s;
+    }
+    .nav-item .icon { font-size: 1.3rem; }
+    .nav-item.active { color: #38bdf8; }
+    .nav-item.active .icon { transform: translateY(-2px); transition: transform 0.2s; }
+
+    /* Goal Cards */
     .goal-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 14px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .goal-header { display: flex; justify-content: space-between; align-items: center; }
-    .goal-title { font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .goal-title { font-weight: 800; font-size: 0.95rem; color: #fff; }
     .btn-delete-goal {
-      background: none;
-      border: none;
-      color: #64748b;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
       cursor: pointer;
-      font-size: 1.1rem;
-      padding: 4px;
-      line-height: 1;
-      border-radius: 6px;
-      transition: color 0.2s;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      padding: 4px 8px;
     }
-    .btn-delete-goal:hover { color: var(--danger); }
     .goal-progress-bg {
       background: rgba(255, 255, 255, 0.08);
       border-radius: 9999px;
-      height: 12px;
+      height: 10px;
       overflow: hidden;
-      margin: 10px 0 8px;
+      margin: 8px 0;
     }
     .goal-progress-fill {
       background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
       height: 100%;
       border-radius: 9999px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.4s ease;
     }
-    .goal-stats { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
+    .goal-stats { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
 
-    /* Timeframe Slicer Chips */
-    .slicer-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
-    .slicer {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
-      color: var(--text-muted);
-      padding: 6px 14px;
-      border-radius: 9999px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .slicer.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    /* Analytics Mini-Cards */
+    /* Stats Grid */
     .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-    .kid-stat-box { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px; text-align: center; }
-    .kid-stat-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .kid-stat-val { font-size: 1.3rem; font-weight: 900; margin: 4px 0 0; }
+    .kid-stat-box { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 14px; padding: 12px; text-align: center; }
+    .kid-stat-title { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+    .kid-stat-val { font-size: 1.25rem; font-weight: 900; margin: 3px 0 0; }
 
-    /* Filter Chips */
-    .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
-    .chip {
+    /* Chips */
+    .slicer-chips, .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
+    .slicer, .chip {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
-      padding: 6px 12px;
+      padding: 5px 12px;
       border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
     }
+    .slicer.active { background: var(--primary); color: white; border-color: var(--primary); }
     .chip.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
 
-    /* Transactions Table */
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { padding: 12px 6px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
-    .pos { color: var(--success); font-weight: 800; font-size: 1rem; }
-    .neg { color: var(--danger); font-weight: 800; font-size: 1rem; }
-    .type-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-right: 4px; display: inline-block; }
+    /* Activity Feed & Pagination */
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .pos { color: var(--success); font-weight: 800; font-size: 0.95rem; }
+    .neg { color: var(--danger); font-weight: 800; font-size: 0.95rem; }
+    .type-badge { font-size: 0.68rem; padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-right: 4px; display: inline-block; }
     .type-chore { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
     .type-reward { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
     .type-penalty { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
     .type-allowance { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
     .type-expense { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
-    .denied-banner {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 16px;
-      font-size: 0.88rem;
-    }
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
+    .btn-page { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); color: #fff; padding: 4px 10px; border-radius: 8px; cursor: pointer; }
+    .btn-page:disabled { opacity: 0.3; cursor: not-allowed; }
   </style>
 </head>
 <body>
+
+  <!-- AUTHENTICATED TOP HEADER -->
+  <div class="top-bar" id="topHeader" style="display: none;">
+    <div class="user-profile">
+      <div class="user-avatar" id="avatarInitial">A</div>
+      <div class="user-details">
+        <span class="user-name" id="childHeaderName">Hero</span>
+        <span class="user-rank" id="childHeaderRank">Novice</span>
+      </div>
+    </div>
+    <button class="btn-lock" onclick="logout()">🔒 Lock</button>
+  </div>
+
   <div class="container">
 
     <!-- LOGIN SCREEN -->
-    <div class="card" id="loginCard" style="text-align: center; padding: 36px 24px;">
-      <div style="font-size: 3.5rem; margin-bottom: 10px;">🚀</div>
-      <h2 style="margin: 0 0 6px; font-weight: 900; font-size: 1.6rem; letter-spacing: -0.5px;">Welcome Back!</h2>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0 0 24px;">Unlock your piggy bank and missions</p>
+    <div class="card" id="loginCard" style="text-align: center; padding: 36px 20px; margin-top: 30px;">
+      <div style="font-size: 3.2rem; margin-bottom: 8px;">🚀</div>
+      <h2 style="margin: 0 0 6px; font-weight: 900; font-size: 1.5rem;">Family PiggyBank</h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 20px;">Pick your name & enter PIN</p>
 
       <div class="form-group">
-        <label for="childNameSelect">Select Your Name</label>
+        <label for="childNameSelect">Hero Name</label>
         <select id="childNameSelect"><option value="">Loading heroes...</option></select>
       </div>
 
       <div class="form-group">
-        <label for="pinInput">Secret 4-Digit PIN</label>
-        <input type="password" id="pinInput" placeholder="••••" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:1.6rem;">
+        <label for="pinInput">4-Digit Secret PIN</label>
+        <input type="password" id="pinInput" placeholder="••••" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:1.5rem;">
       </div>
 
-      <button class="btn btn-blue" onclick="attemptLogin()">✨ Unlock My PiggyBank</button>
+      <button class="btn btn-blue" onclick="attemptLogin()">✨ Unlock Dashboard</button>
     </div>
 
-    <!-- MAIN INTERACTIVE DASHBOARD -->
-    <div id="dashboard" style="display: none;">
-      
-      <!-- Balance Hero Card with Rank Badge -->
+    <!-- TAB 1: 🏠 DASHBOARD -->
+    <div id="tab-home" class="tab-content">
+      <!-- Balance Card -->
       <div class="card balance-card">
-        <div id="rankBadge" class="rank-pill">🪙 Novice Saver</div>
-        <div class="balance-title" id="childGreeting">Total Savings</div>
+        <div class="balance-title">Current Savings</div>
         <div class="balance-val" id="balanceDisplay">Rs. 0</div>
       </div>
 
-      <!-- Denied Chores Notice Banner -->
-      <div class="denied-banner" id="deniedSection" style="display: none;">
-        <strong style="color: #f87171;">⚠️ Note on Recent Chores:</strong>
-        <div id="deniedList" style="margin-top: 4px; color: #cbd5e1;"></div>
+      <!-- Denied Chores Alert -->
+      <div class="card" id="deniedSection" style="display: none; border-left: 4px solid var(--danger); background: rgba(239, 68, 68, 0.1);">
+        <strong style="color: #fca5a5; font-size: 0.85rem;">⚠️ Note on Recent Chores:</strong>
+        <div id="deniedList" style="margin-top: 4px; font-size: 0.82rem; color: #cbd5e1;"></div>
       </div>
 
-      <!-- SAVING GOALS & TARGETS -->
-      <div class="card" style="border-left: 4px solid var(--accent);">
-        <h3>🎯 My Saving Goals</h3>
-        <div id="goalsContainer">Loading targets...</div>
-        
-        <details style="margin-top: 14px; font-size: 0.9rem;">
-          <summary style="font-weight: 800; color: var(--accent); cursor: pointer; padding: 4px 0;">+ Set a New Wishlist Goal</summary>
-          <div style="margin-top: 12px;">
-            <div class="form-group">
-              <label for="goalTitleInput">What are you saving for?</label>
-              <input type="text" id="goalTitleInput" placeholder="e.g. Lego Set, Skateboard, Game Pass">
-            </div>
-            <div class="form-group">
-              <label for="goalAmountInput">Target Price (<span class="currencySymbol">Rs. </span>)</label>
-              <input type="number" id="goalAmountInput" placeholder="e.g. 2500">
-            </div>
-            <button class="btn btn-purple" onclick="addGoal()">🚀 Create Goal Target</button>
-          </div>
-        </details>
-      </div>
-
-      <!-- Interactive Analytics Slicer -->
+      <!-- Performance Slicers -->
       <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h3 style="margin:0;">📊 Savings Stats</h3>
+        </div>
         <div class="slicer-chips">
           <button class="slicer active" onclick="setChildTimeframe(this, 'ALL')">All Time</button>
           <button class="slicer" onclick="setChildTimeframe(this, 'WEEK')">This Week</button>
@@ -290,11 +325,11 @@
 
         <div class="kid-stats-grid">
           <div class="kid-stat-box" style="border-top: 3px solid #6366f1;">
-            <div class="kid-stat-title">🧹 Chores Earned</div>
+            <div class="kid-stat-title">🧹 Chores</div>
             <div class="kid-stat-val" id="kidChoreStat" style="color:#818cf8;">Rs. 0</div>
           </div>
           <div class="kid-stat-box" style="border-top: 3px solid #10b981;">
-            <div class="kid-stat-title">🎁 Rewards / Gifts</div>
+            <div class="kid-stat-title">🎁 Rewards</div>
             <div class="kid-stat-val" id="kidRewardStat" style="color:#34d399;">Rs. 0</div>
           </div>
           <div class="kid-stat-box" style="border-top: 3px solid #ef4444;">
@@ -307,51 +342,98 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Chore Submission Card -->
-      <div class="card" style="border-left: 4px solid var(--success);">
-        <h3>✅ Complete a Chore</h3>
+    <!-- TAB 2: 🎯 GOALS -->
+    <div id="tab-goals" class="tab-content">
+      <div class="card" style="border-left: 4px solid var(--accent);">
+        <h3>🎯 My Wishlist Targets</h3>
+        <div id="goalsContainer">Loading goals...</div>
+      </div>
+
+      <div class="card">
+        <h3>+ Set New Goal</h3>
         <div class="form-group">
-          <label for="choreSelect">Pick Finished Task</label>
+          <label for="goalTitleInput">Item Name</label>
+          <input type="text" id="goalTitleInput" placeholder="e.g. Lego Star Wars, Rollerblades">
+        </div>
+        <div class="form-group">
+          <label for="goalAmountInput">Target Price (<span class="currencySymbol">Rs. </span>)</label>
+          <input type="number" id="goalAmountInput" placeholder="e.g. 2500">
+        </div>
+        <button class="btn btn-purple" onclick="addGoal()">🚀 Create Goal Target</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: ⚡ MISSIONS & SPENDING -->
+    <div id="tab-missions" class="tab-content">
+      <div class="card" style="border-left: 4px solid var(--success);">
+        <h3>✅ Finished a Chore?</h3>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:-6px;">Submit for parent check to earn your reward.</p>
+        <div class="form-group">
+          <label for="choreSelect">Select Task</label>
           <select id="choreSelect"><option>Loading tasks...</option></select>
         </div>
-        <button class="btn btn-green" onclick="claimChore()">⭐ Submit for Parent Check</button>
+        <button class="btn btn-green" onclick="claimChore()">⭐ Submit for Approval</button>
       </div>
 
-      <!-- Expense Tracking Card -->
-      <div class="card">
-        <h3>💳 Log Money Spent</h3>
+      <div class="card" style="border-left: 4px solid #38bdf8;">
+        <h3>💳 Log Expense</h3>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:-6px;">Bought something? Subtract it from your savings.</p>
         <div class="form-group">
-          <label for="spendAmt">Amount Spent (<span class="currencySymbol">Rs. </span>)</label>
-          <input type="number" id="spendAmt" placeholder="e.g. 200">
+          <label for="spendAmt">Amount (<span class="currencySymbol">Rs. </span>)</label>
+          <input type="number" id="spendAmt" placeholder="e.g. 150">
         </div>
         <div class="form-group">
-          <label for="spendDesc">What did you buy?</label>
-          <input type="text" id="spendDesc" placeholder="e.g. Books, comic, treats">
+          <label for="spendDesc">Item Description</label>
+          <input type="text" id="spendDesc" placeholder="e.g. Books, snacks, toy">
         </div>
-        <button class="btn btn-blue" onclick="logSpending()">Subtract from Balance</button>
+        <button class="btn btn-blue" onclick="logSpending()">Log Expense</button>
       </div>
+    </div>
 
-      <!-- Ledger Feed with Chips -->
+    <!-- TAB 4: 📜 ACTIVITY FEED -->
+    <div id="tab-activity" class="tab-content">
       <div class="card">
-        <h3>📜 Past Activities</h3>
+        <h3>📜 Ledger Feed</h3>
         <div class="filter-chips">
           <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
           <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
           <button class="chip" onclick="setTxFilter(this, 'Reward')">Rewards</button>
           <button class="chip" onclick="setTxFilter(this, 'Penalty')">Penalties</button>
-          <button class="chip" onclick="setTxFilter(this, 'Expense')">Spending</button>
+          <button class="chip" onclick="setTxFilter(this, 'Expense')">Spent</button>
         </div>
 
-        <table>
-          <thead><tr><th>Activity</th><th style="text-align:right;">Amount</th></tr></thead>
-          <tbody id="txBody"></tbody>
-        </table>
-        <button class="btn btn-gray" style="margin-top: 14px;" onclick="logout()">🔒 Lock Screen</button>
-      </div>
+        <div id="txList"></div>
 
+        <div class="pagination-bar" id="paginationBar">
+          <button class="btn-page" id="btnPrevPage" onclick="changePage(-1)">← Previous</button>
+          <span id="pageIndicator">Page 1</span>
+          <button class="btn-page" id="btnNextPage" onclick="changePage(1)">Next →</button>
+        </div>
+      </div>
     </div>
 
+  </div>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <div class="bottom-nav" id="bottomNav" style="display: none;">
+    <button class="nav-item active" onclick="switchNavTab('tab-home', this)">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="switchNavTab('tab-goals', this)">
+      <span class="icon">🎯</span>
+      <span>Goals</span>
+    </button>
+    <button class="nav-item" onclick="switchNavTab('tab-missions', this)">
+      <span class="icon">⚡</span>
+      <span>Actions</span>
+    </button>
+    <button class="nav-item" onclick="switchNavTab('tab-activity', this)">
+      <span class="icon">📜</span>
+      <span>Ledger</span>
+    </button>
   </div>
 
   <script>
@@ -363,15 +445,11 @@
     let currentChildBalance = 0;
     let currentFilter = 'ALL';
     let currentChildTimeframe = 'ALL';
+    let currentPage = 1;
+    const itemsPerPage = 8;
 
     function triggerConfetti() {
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      } catch (e) {}
+      try { confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } }); } catch (e) {}
     }
 
     function calculateRank(balance) {
@@ -381,6 +459,14 @@
       if (balance >= 2000) return "🚀 Master Builder";
       if (balance >= 500) return "🌱 Junior Earner";
       return "🪙 Novice Saver";
+    }
+
+    function switchNavTab(tabId, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      el.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function init() {
@@ -399,16 +485,13 @@
         mode: "cors",
         redirect: "follow"
       })
-      .then(res => {
-        if (!res.ok) throw new Error("HTTP error " + res.status);
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
         if (data.error) throw new Error(data.error);
         if (data.currency) activeCurrency = data.currency;
 
         if (!data.children || data.children.length === 0) {
-          select.innerHTML = '<option value="">No children configured</option>';
+          select.innerHTML = '<option value="">No heroes configured</option>';
           return;
         }
 
@@ -456,10 +539,7 @@
       })
       .then(res => res.json())
       .then(data => {
-        if (data.error) {
-          logout();
-          return;
-        }
+        if (data.error) { logout(); return; }
         if (data.currency) activeCurrency = data.currency;
         rawHistory = data.history || [];
         childGoals = data.goals || [];
@@ -467,13 +547,19 @@
 
         document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = activeCurrency);
         document.getElementById('loginCard').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('topHeader').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'flex';
+        document.getElementById('tab-home').classList.add('active');
 
-        document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
+        // Header User Info
+        document.getElementById('avatarInitial').innerText = (data.name || 'H').charAt(0).toUpperCase();
+        document.getElementById('childHeaderName').innerText = data.name;
+        document.getElementById('childHeaderRank').innerText = calculateRank(currentChildBalance);
+
+        // Home Balance
         document.getElementById('balanceDisplay').innerText = activeCurrency + currentChildBalance.toFixed(0);
-        document.getElementById('rankBadge').innerText = calculateRank(currentChildBalance);
 
-        // Denied feedback
+        // Denied Feedback
         const deniedBox = document.getElementById('deniedSection');
         const deniedList = document.getElementById('deniedList');
         deniedList.innerHTML = '';
@@ -486,7 +572,7 @@
           deniedBox.style.display = 'none';
         }
 
-        // Chores catalog
+        // Chores Catalog
         const choreSel = document.getElementById('choreSelect');
         choreSel.innerHTML = '';
         if (!data.chores || data.chores.length === 0) {
@@ -509,7 +595,7 @@
       container.innerHTML = '';
 
       if (childGoals.length === 0) {
-        container.innerHTML = '<p style="margin:0; color:var(--text-muted); font-size:0.85rem;">No goals set yet! Tap below to add your first goal.</p>';
+        container.innerHTML = '<p style="margin:0; color:var(--text-muted); font-size:0.85rem;">No goals yet. Add one below!</p>';
         return;
       }
 
@@ -523,17 +609,17 @@
               <span class="goal-title">🎯 ${g.title}</span>
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-size:0.8rem; font-weight:800; color:${achieved ? 'var(--success)' : 'var(--accent)'};">
-                  ${achieved ? '🎉 Ready to Buy!' : pct + '% Saved'}
+                  ${achieved ? '🎉 Ready to Buy!' : pct + '%'}
                 </span>
-                <button class="btn-delete-goal" onclick="deleteGoal('${g.id}')" title="Delete Goal">✕</button>
+                <button class="btn-delete-goal" onclick="deleteGoal('${g.id}')">✕</button>
               </div>
             </div>
             <div class="goal-progress-bg">
               <div class="goal-progress-fill" style="width: ${pct}%;"></div>
             </div>
             <div class="goal-stats">
-              <span>Target: ${activeCurrency}${g.targetAmount}</span>
-              <span>${achieved ? 'Target Unlocked!' : 'Need ' + activeCurrency + Math.max(0, g.targetAmount - currentChildBalance)}</span>
+              <span>Goal: ${activeCurrency}${g.targetAmount}</span>
+              <span>${achieved ? 'Goal Unlocked!' : 'Need ' + activeCurrency + Math.max(0, g.targetAmount - currentChildBalance)}</span>
             </div>
           </div>
         `;
@@ -545,9 +631,7 @@
       const targetAmount = document.getElementById('goalAmountInput').value;
       const token = sessionStorage.getItem('child_token');
 
-      if (!title || !targetAmount || Number(targetAmount) <= 0) {
-        return alert("Please enter a goal item and target price.");
-      }
+      if (!title || !targetAmount || Number(targetAmount) <= 0) return alert("Enter item name and price.");
 
       fetch(SCRIPT_URL, {
         method: 'POST',
@@ -564,7 +648,7 @@
     }
 
     function deleteGoal(goalId) {
-      if (!confirm("Remove this goal from your list?")) return;
+      if (!confirm("Delete this goal?")) return;
       const token = sessionStorage.getItem('child_token');
 
       fetch(SCRIPT_URL, {
@@ -586,11 +670,10 @@
     function renderChildAnalytics() {
       const now = new Date();
       let startTime = 0;
-
       if (currentChildTimeframe === 'WEEK') {
         const startOfWeek = new Date(now);
         startOfWeek.setDate(now.getDate() - now.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
+        startOfWeek.setHours(0,0,0,0);
         startTime = startOfWeek.getTime();
       } else if (currentChildTimeframe === 'MONTH') {
         startTime = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -599,13 +682,11 @@
       }
 
       let choreSum = 0, rewardSum = 0, penaltySum = 0, spendSum = 0;
-
       rawHistory.forEach(tx => {
         const txTime = tx.timestamp || new Date(tx.date).getTime();
         if (txTime >= startTime) {
           const type = String(tx.type).toLowerCase();
           const amt = Math.abs(tx.amount);
-
           if (type === 'chore') choreSum += amt;
           else if (type === 'reward' || type === 'special reward') rewardSum += amt;
           else if (type === 'penalty') penaltySum += amt;
@@ -623,12 +704,18 @@
       document.querySelectorAll('.chip').forEach(el => el.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = filterType;
+      currentPage = 1;
+      renderTransactions();
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
       renderTransactions();
     }
 
     function renderTransactions() {
-      const tbody = document.getElementById('txBody');
-      tbody.innerHTML = '';
+      const container = document.getElementById('txList');
+      container.innerHTML = '';
 
       const filtered = rawHistory.filter(tx => {
         if (currentFilter === 'ALL') return true;
@@ -636,11 +723,19 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-muted); padding:16px;">No records found.</td></tr>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:16px;">No activities found.</p>';
+        document.getElementById('paginationBar').style.display = 'none';
         return;
       }
 
-      filtered.forEach(tx => {
+      document.getElementById('paginationBar').style.display = 'flex';
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+      paginated.forEach(tx => {
         const isPos = tx.amount >= 0;
         let badgeClass = 'type-expense';
         if (tx.type === 'Chore') badgeClass = 'type-chore';
@@ -648,17 +743,23 @@
         else if (tx.type === 'Penalty') badgeClass = 'type-penalty';
         else if (tx.type === 'Allowance') badgeClass = 'type-allowance';
 
-        tbody.innerHTML += `<tr>
-          <td>
-            <span class="type-badge ${badgeClass}">${tx.type}</span>
-            <strong style="color:#f8fafc;">${tx.desc}</strong>
-            <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${tx.date}</div>
-          </td>
-          <td style="text-align:right;" class="${isPos ? 'pos' : 'neg'}">
-            ${isPos ? '+' : '-'}${activeCurrency}${Math.abs(tx.amount).toFixed(0)}
-          </td>
-        </tr>`;
+        container.innerHTML += `
+          <div class="tx-item">
+            <div>
+              <span class="type-badge ${badgeClass}">${tx.type}</span>
+              <strong style="font-size:0.9rem;">${tx.desc}</strong>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${tx.date}</div>
+            </div>
+            <div class="${isPos ? 'pos' : 'neg'}">
+              ${isPos ? '+' : '-'}${activeCurrency}${Math.abs(tx.amount).toFixed(0)}
+            </div>
+          </div>
+        `;
       });
+
+      document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('btnPrevPage').disabled = (currentPage === 1);
+      document.getElementById('btnNextPage').disabled = (currentPage === totalPages);
     }
 
     function claimChore() {
@@ -684,7 +785,7 @@
       const token = sessionStorage.getItem('child_token');
       const amount = document.getElementById('spendAmt').value;
       const desc = document.getElementById('spendDesc').value;
-      if (!amount || !desc) return alert('Enter amount and what you bought.');
+      if (!amount || !desc) return alert('Enter amount and item description.');
 
       fetch(SCRIPT_URL, {
         method: 'POST',
@@ -697,6 +798,7 @@
         document.getElementById('spendAmt').value = '';
         document.getElementById('spendDesc').value = '';
         loadChildData(token);
+        alert('Expense recorded.');
       })
       .catch(err => alert("Expense error: " + err.message));
     }
@@ -704,6 +806,9 @@
     function logout() {
       sessionStorage.removeItem('child_token');
       document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('topHeader').style.display = 'none';
+      document.getElementById('bottomNav').style.display = 'none';
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.getElementById('loginCard').style.display = 'block';
       document.getElementById('pinInput').value = '';
       init();
