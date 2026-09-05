@@ -21,6 +21,17 @@
     .btn-green { background: #38a169; }
     .btn-blue { background: #3182ce; }
     .btn-gray { background: #718096; margin-top: 8px; }
+
+    /* Timeframe Slicer Chips */
+    .slicer-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; justify-content: center; }
+    .slicer { background: #edf2f7; border: 1px solid #cbd5e0; color: #4a5568; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: auto; }
+    .slicer.active { background: #2b6cb0; color: white; border-color: #2b6cb0; }
+
+    /* Kid Analytics Grid */
+    .kid-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .kid-stat-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; }
+    .kid-stat-title { font-size: 0.72rem; font-weight: 700; color: #718096; text-transform: uppercase; }
+    .kid-stat-val { font-size: 1.35rem; font-weight: 800; margin: 4px 0 0; }
     
     /* Transaction Filter Chips */
     .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
@@ -73,6 +84,35 @@
         <div id="deniedList"></div>
       </div>
 
+      <!-- Kid Analytics Card -->
+      <div class="card" style="padding-bottom: 14px;">
+        <div class="slicer-chips">
+          <button class="slicer active" onclick="setChildTimeframe(this, 'ALL')">All Time</button>
+          <button class="slicer" onclick="setChildTimeframe(this, 'WEEK')">This Week</button>
+          <button class="slicer" onclick="setChildTimeframe(this, 'MONTH')">This Month</button>
+          <button class="slicer" onclick="setChildTimeframe(this, 'YEAR')">This Year</button>
+        </div>
+
+        <div class="kid-stats-grid">
+          <div class="kid-stat-box" style="border-top: 3px solid #2b6cb0;">
+            <div class="kid-stat-title">Chores Earned</div>
+            <div class="kid-stat-val" id="kidChoreStat" style="color:#2b6cb0;">Rs. 0</div>
+          </div>
+          <div class="kid-stat-box" style="border-top: 3px solid #38a169;">
+            <div class="kid-stat-title">Rewards / Bonuses</div>
+            <div class="kid-stat-val" id="kidRewardStat" style="color:#38a169;">Rs. 0</div>
+          </div>
+          <div class="kid-stat-box" style="border-top: 3px solid #e53e3e;">
+            <div class="kid-stat-title">Penalties</div>
+            <div class="kid-stat-val" id="kidPenaltyStat" style="color:#e53e3e;">Rs. 0</div>
+          </div>
+          <div class="kid-stat-box" style="border-top: 3px solid #718096;">
+            <div class="kid-stat-title">Money Spent</div>
+            <div class="kid-stat-val" id="kidSpentStat" style="color:#4a5568;">Rs. 0</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Claim Finished Chore -->
       <div class="card">
         <h3>I Finished a Chore!</h3>
@@ -101,7 +141,6 @@
       <div class="card">
         <h3>Past Transactions</h3>
         
-        <!-- Filter Chips -->
         <div class="filter-chips">
           <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
           <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
@@ -124,15 +163,14 @@
   </div>
 
   <script>
-    // Exact deployed Google Apps Script /exec URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhJd-kylnlyh6gSWXRd6VIzQrF3lPAlxWpp_VKlykMrRSupfv_eTuHMYugkDyMTdQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9XQECAp7VLwD0Pw2AiKC553q-W7t2RsOvBqrbdyDDu4WxZO5hSphCFMJE2K4oyls/exec";
 
     let activeCurrency = "Rs. ";
     let rawHistory = [];
     let currentFilter = 'ALL';
+    let currentChildTimeframe = 'ALL';
 
     function init() {
-      // Check for active authenticated session
       const storedToken = sessionStorage.getItem('child_token');
       if (storedToken) {
         loadChildData(storedToken);
@@ -142,7 +180,6 @@
       const select = document.getElementById('childNameSelect');
       select.innerHTML = '<option value="">Loading names...</option>';
 
-      // Follow redirect explicitly without custom headers to avoid CORS blockage
       fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`, {
         method: "GET",
         mode: "cors",
@@ -243,10 +280,56 @@
           });
         }
 
-        // Render Ledger
+        renderChildAnalytics();
         renderTransactions();
       })
       .catch(err => alert("Data Load Error: " + err.message));
+    }
+
+    function setChildTimeframe(btn, tf) {
+      document.querySelectorAll('.slicer').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      currentChildTimeframe = tf;
+      renderChildAnalytics();
+    }
+
+    function renderChildAnalytics() {
+      const now = new Date();
+      let startTime = 0;
+
+      if (currentChildTimeframe === 'WEEK') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+        startTime = startOfWeek.getTime();
+      } else if (currentChildTimeframe === 'MONTH') {
+        startTime = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      } else if (currentChildTimeframe === 'YEAR') {
+        startTime = new Date(now.getFullYear(), 0, 1).getTime();
+      }
+
+      let choreSum = 0;
+      let rewardSum = 0;
+      let penaltySum = 0;
+      let spendSum = 0;
+
+      rawHistory.forEach(tx => {
+        const txTime = tx.timestamp || new Date(tx.date).getTime();
+        if (txTime >= startTime) {
+          const type = String(tx.type).toLowerCase();
+          const amt = Math.abs(tx.amount);
+
+          if (type === 'chore') choreSum += amt;
+          else if (type === 'reward' || type === 'special reward') rewardSum += amt;
+          else if (type === 'penalty') penaltySum += amt;
+          else if (type === 'expense') spendSum += amt;
+        }
+      });
+
+      document.getElementById('kidChoreStat').innerText = activeCurrency + choreSum.toFixed(0);
+      document.getElementById('kidRewardStat').innerText = activeCurrency + rewardSum.toFixed(0);
+      document.getElementById('kidPenaltyStat').innerText = activeCurrency + penaltySum.toFixed(0);
+      document.getElementById('kidSpentStat').innerText = activeCurrency + spendSum.toFixed(0);
     }
 
     function setTxFilter(btn, filterType) {
@@ -338,7 +421,6 @@
       init();
     }
 
-    // Initialize application on load
     init();
   </script>
 </body>
