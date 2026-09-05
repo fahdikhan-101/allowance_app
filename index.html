@@ -7,20 +7,37 @@
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: #f7fafc; margin: 0; padding: 16px; color: #2d3748; }
-    .container { max-width: 460px; margin: 0 auto; }
+    .container { max-width: 480px; margin: 0 auto; }
     .card { background: white; border-radius: 16px; padding: 22px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
     .balance-val { font-size: 3.2rem; font-weight: 800; color: #38a169; margin: 4px 0; text-align: center; }
     .subtitle { text-align: center; color: #a0aec0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
     h3 { margin-top: 0; font-size: 1.15rem; color: #2b6cb0; }
-    input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+    
+    .form-group { margin-bottom: 12px; text-align: left; }
+    label { display: block; font-size: 0.85rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
+    input, select { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+    
     button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; }
     .btn-green { background: #38a169; }
     .btn-blue { background: #3182ce; }
     .btn-gray { background: #718096; margin-top: 8px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #edf2f7; }
+    
+    /* Transaction Filter Chips */
+    .filter-chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
+    .chip { background: #edf2f7; border: none; color: #4a5568; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; width: auto; white-space: nowrap; }
+    .chip.active { background: #3182ce; color: white; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 10px 4px; text-align: left; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
     .pos { color: #38a169; font-weight: 700; }
     .neg { color: #e53e3e; font-weight: 700; }
+    .type-badge { font-size: 0.72rem; padding: 2px 6px; border-radius: 6px; font-weight: 700; text-transform: uppercase; margin-right: 4px; display: inline-block; }
+    .type-chore { background: #ebf8ff; color: #2b6cb0; }
+    .type-reward { background: #e6fffa; color: #234e52; }
+    .type-penalty { background: #fff5f5; color: #9b2c2c; }
+    .type-allowance { background: #faf5ff; color: #6b46c1; }
+    .type-expense { background: #edf2f7; color: #4a5568; }
+
     .denied-banner { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.9rem; }
   </style>
 </head>
@@ -30,52 +47,89 @@
     <!-- LOGIN SCREEN -->
     <div class="card" id="loginCard">
       <h2 style="margin-top:0; text-align:center; color:#2b6cb0;">Kid Sign In</h2>
-      <label style="font-size:0.85rem; font-weight:700; color:#718096; display:block; margin-bottom:6px;">Who is saving today?</label>
-      <select id="childNameSelect"><option value="">Loading names...</option></select>
-      <input type="password" id="pinInput" placeholder="Enter 4-Digit PIN" maxlength="6" style="text-align:center; letter-spacing:4px; font-size:1.4rem;">
+      <div class="form-group">
+        <label for="childNameSelect">Who is saving today?</label>
+        <select id="childNameSelect"><option value="">Loading names...</option></select>
+      </div>
+      <div class="form-group">
+        <label for="pinInput">Enter 4-Digit PIN</label>
+        <input type="password" id="pinInput" placeholder="••••" maxlength="6" style="text-align:center; letter-spacing:4px; font-size:1.4rem;">
+      </div>
       <button class="btn-blue" onclick="attemptLogin()">Unlock My Savings</button>
     </div>
 
     <!-- AUTHENTICATED DASHBOARD -->
     <div id="dashboard" style="display: none;">
+      
+      <!-- Balance Card -->
       <div class="card">
         <div class="subtitle" id="childGreeting">Total Savings</div>
-        <div class="balance-val" id="balanceDisplay">$0.00</div>
+        <div class="balance-val" id="balanceDisplay">Rs. 0</div>
       </div>
 
+      <!-- Denied Chores Note -->
       <div class="denied-banner" id="deniedSection" style="display: none;">
         <strong style="color: #c53030;">Note on recent chores:</strong>
         <div id="deniedList"></div>
       </div>
 
+      <!-- Claim Finished Chore -->
       <div class="card">
         <h3>I Finished a Chore!</h3>
-        <select id="choreSelect"><option>Loading chores...</option></select>
+        <div class="form-group">
+          <label for="choreSelect">Choose Chore</label>
+          <select id="choreSelect"><option>Loading...</option></select>
+        </div>
         <button class="btn-green" onclick="claimChore()">Ask Parents to Check</button>
       </div>
 
+      <!-- Log Expense -->
       <div class="card">
         <h3>I Spent Money</h3>
-        <input type="number" id="spendAmt" step="0.01" placeholder="Amount ($)">
-        <input type="text" id="spendDesc" placeholder="What did you buy?">
+        <div class="form-group">
+          <label for="spendAmt">Amount Spent (<span class="currencySymbol">Rs.</span>)</label>
+          <input type="number" id="spendAmt" placeholder="e.g. 100">
+        </div>
+        <div class="form-group">
+          <label for="spendDesc">What did you buy?</label>
+          <input type="text" id="spendDesc" placeholder="e.g. Book, treats">
+        </div>
         <button class="btn-blue" onclick="logSpending()">Subtract from Savings</button>
       </div>
 
+      <!-- Transactions Ledger with Filter Bar -->
       <div class="card">
         <h3>Past Transactions</h3>
+        
+        <!-- Filter Chips -->
+        <div class="filter-chips">
+          <button class="chip active" onclick="setTxFilter(this, 'ALL')">All</button>
+          <button class="chip" onclick="setTxFilter(this, 'Chore')">Chores</button>
+          <button class="chip" onclick="setTxFilter(this, 'Reward')">Rewards</button>
+          <button class="chip" onclick="setTxFilter(this, 'Penalty')">Penalties</button>
+          <button class="chip" onclick="setTxFilter(this, 'Expense')">Spending</button>
+        </div>
+
         <table>
-          <thead><tr><th>Date</th><th>Item</th><th>Amount</th></tr></thead>
+          <thead>
+            <tr><th>Activity</th><th style="text-align:right;">Amount</th></tr>
+          </thead>
           <tbody id="txBody"></tbody>
         </table>
         <button class="btn-gray" onclick="logout()">Lock Screen</button>
       </div>
+
     </div>
 
   </div>
 
   <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT /exec URL HERE:
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJus1PTIphKoCqZfX79AMPnO9gcB8jWmhSKJspGSbE4cOD7E7VQFLwP2m6J7jhNRw/exec";
+    // Paste your Google Apps Script Web App /exec URL here:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9XQECAp7VLwD0Pw2AiKC553q-W7t2RsOvBqrbdyDDu4WxZO5hSphCFMJE2K4oyls/exec";
+
+    let activeCurrency = "Rs. ";
+    let rawHistory = [];
+    let currentFilter = 'ALL';
 
     function init() {
       const storedToken = sessionStorage.getItem('child_token');
@@ -85,6 +139,7 @@
         fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`)
           .then(res => res.json())
           .then(data => {
+            if (data.currency) activeCurrency = data.currency;
             const select = document.getElementById('childNameSelect');
             select.innerHTML = '<option value="">-- Choose Name --</option>';
             data.children.forEach(c => {
@@ -125,13 +180,17 @@
             logout();
             return;
           }
+          if (data.currency) activeCurrency = data.currency;
+          rawHistory = data.history || [];
+
+          document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = activeCurrency);
           document.getElementById('loginCard').style.display = 'none';
           document.getElementById('dashboard').style.display = 'block';
 
           document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
-          document.getElementById('balanceDisplay').innerText = '$' + Number(data.balance).toFixed(2);
+          document.getElementById('balanceDisplay').innerText = activeCurrency + Number(data.balance).toFixed(0);
 
-          // Denied feedback
+          // Denied Feedback
           const deniedBox = document.getElementById('deniedSection');
           const deniedList = document.getElementById('deniedList');
           deniedList.innerHTML = '';
@@ -146,21 +205,54 @@
           const choreSel = document.getElementById('choreSelect');
           choreSel.innerHTML = '';
           data.chores.forEach(c => {
-            choreSel.innerHTML += `<option value="${c.id}">${c.title} (+$${Number(c.reward).toFixed(2)})</option>`;
+            choreSel.innerHTML += `<option value="${c.id}">${c.title} (+${activeCurrency}${Number(c.reward).toFixed(0)})</option>`;
           });
 
-          // Ledger
-          const tbody = document.getElementById('txBody');
-          tbody.innerHTML = '';
-          data.history.forEach(tx => {
-            const isPos = tx.amount >= 0;
-            tbody.innerHTML += `<tr>
-              <td>${tx.date}</td>
-              <td>${tx.desc}</td>
-              <td class="${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}</td>
-            </tr>`;
-          });
+          // Render Ledger
+          renderTransactions();
         });
+    }
+
+    function setTxFilter(btn, filterType) {
+      document.querySelectorAll('.chip').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = filterType;
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const tbody = document.getElementById('txBody');
+      tbody.innerHTML = '';
+
+      const filtered = rawHistory.filter(tx => {
+        if (currentFilter === 'ALL') return true;
+        return tx.type.toLowerCase() === currentFilter.toLowerCase();
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#a0aec0; padding:16px;">No transactions found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(tx => {
+        const isPos = tx.amount >= 0;
+        let badgeClass = 'type-expense';
+        if (tx.type === 'Chore') badgeClass = 'type-chore';
+        else if (tx.type === 'Reward') badgeClass = 'type-reward';
+        else if (tx.type === 'Penalty') badgeClass = 'type-penalty';
+        else if (tx.type === 'Allowance') badgeClass = 'type-allowance';
+
+        tbody.innerHTML += `<tr>
+          <td>
+            <span class="type-badge ${badgeClass}">${tx.type}</span>
+            <strong>${tx.desc}</strong>
+            <div style="font-size:0.75rem; color:#a0aec0; margin-top:2px;">${tx.date}</div>
+          </td>
+          <td style="text-align:right;" class="${isPos ? 'pos' : 'neg'}">
+            ${isPos ? '+' : ''}${activeCurrency}${Math.abs(tx.amount).toFixed(0)}
+          </td>
+        </tr>`;
+      });
     }
 
     function claimChore() {
