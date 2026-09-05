@@ -87,7 +87,7 @@
       <div class="card">
         <h3>I Spent Money</h3>
         <div class="form-group">
-          <label for="spendAmt">Amount Spent (<span class="currencySymbol">Rs.</span>)</label>
+          <label for="spendAmt">Amount Spent (<span class="currencySymbol">Rs. </span>)</label>
           <input type="number" id="spendAmt" placeholder="e.g. 100">
         </div>
         <div class="form-group">
@@ -124,15 +124,15 @@
   </div>
 
   <script>
-    // Paste your Google Apps Script Web App /exec URL here:
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJus1PTIphKoCqZfX79AMPnO9gcB8jWmhSKJspGSbE4cOD7E7VQFLwP2m6J7jhNRw/exec";
+    // Exact deployed Google Apps Script /exec URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9XQECAp7VLwD0Pw2AiKC553q-W7t2RsOvBqrbdyDDu4WxZO5hSphCFMJE2K4oyls/exec";
 
     let activeCurrency = "Rs. ";
     let rawHistory = [];
     let currentFilter = 'ALL';
 
-function init() {
-      // Clear any stale invalid session to force a clean login check
+    function init() {
+      // Check for active authenticated session
       const storedToken = sessionStorage.getItem('child_token');
       if (storedToken) {
         loadChildData(storedToken);
@@ -142,30 +142,35 @@ function init() {
       const select = document.getElementById('childNameSelect');
       select.innerHTML = '<option value="">Loading names...</option>';
 
-      fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`)
-        .then(res => {
-          if (!res.ok) throw new Error("HTTP error " + res.status);
-          return res.json();
-        })
-        .then(data => {
-          if (data.error) throw new Error(data.error);
-          if (data.currency) activeCurrency = data.currency;
+      // Follow redirect explicitly without custom headers to avoid CORS blockage
+      fetch(`${SCRIPT_URL}?format=json&action=getChildrenList`, {
+        method: "GET",
+        mode: "cors",
+        redirect: "follow"
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.json();
+      })
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        if (data.currency) activeCurrency = data.currency;
 
-          if (!data.children || data.children.length === 0) {
-            select.innerHTML = '<option value="">No children found in Sheet</option>';
-            return;
-          }
+        if (!data.children || data.children.length === 0) {
+          select.innerHTML = '<option value="">No children found</option>';
+          return;
+        }
 
-          select.innerHTML = '<option value="">-- Choose Name --</option>';
-          data.children.forEach(c => {
-            select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-          });
-        })
-        .catch(err => {
-          console.error("Init Error:", err);
-          select.innerHTML = '<option value="">Error loading names</option>';
-          alert("Could not load children list: " + err.message);
+        select.innerHTML = '<option value="">-- Choose Name --</option>';
+        data.children.forEach(c => {
+          select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
         });
+      })
+      .catch(err => {
+        console.error("Fetch failed:", err);
+        select.innerHTML = '<option value="">Error loading names</option>';
+        alert("Could not load names: " + err.message);
+      });
     }
 
     function attemptLogin() {
@@ -175,7 +180,7 @@ function init() {
 
       fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'childLogin', childName: name, pin: pin })
       })
       .then(res => res.json())
@@ -188,48 +193,60 @@ function init() {
           alert(res.error || 'Incorrect PIN');
           document.getElementById('pinInput').value = '';
         }
-      });
+      })
+      .catch(err => alert("Login Error: " + err.message));
     }
 
     function loadChildData(token) {
-      fetch(`${SCRIPT_URL}?format=json&childToken=${encodeURIComponent(token)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            logout();
-            return;
-          }
-          if (data.currency) activeCurrency = data.currency;
-          rawHistory = data.history || [];
+      fetch(`${SCRIPT_URL}?format=json&childToken=${encodeURIComponent(token)}`, {
+        method: "GET",
+        mode: "cors",
+        redirect: "follow"
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          logout();
+          return;
+        }
+        if (data.currency) activeCurrency = data.currency;
+        rawHistory = data.history || [];
 
-          document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = activeCurrency);
-          document.getElementById('loginCard').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
+        document.querySelectorAll('.currencySymbol').forEach(el => el.innerText = activeCurrency);
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
 
-          document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
-          document.getElementById('balanceDisplay').innerText = activeCurrency + Number(data.balance).toFixed(0);
+        document.getElementById('childGreeting').innerText = `${data.name}'s Savings`;
+        document.getElementById('balanceDisplay').innerText = activeCurrency + Number(data.balance).toFixed(0);
 
-          // Denied Feedback
-          const deniedBox = document.getElementById('deniedSection');
-          const deniedList = document.getElementById('deniedList');
-          deniedList.innerHTML = '';
-          if (data.deniedChores && data.deniedChores.length > 0) {
-            deniedBox.style.display = 'block';
-            data.deniedChores.slice(0, 2).forEach(d => {
-              deniedList.innerHTML += `<div style="margin-top:4px;"><strong>${d.title}</strong>: "${d.reason}"</div>`;
-            });
-          }
+        // Denied Feedback
+        const deniedBox = document.getElementById('deniedSection');
+        const deniedList = document.getElementById('deniedList');
+        deniedList.innerHTML = '';
+        if (data.deniedChores && data.deniedChores.length > 0) {
+          deniedBox.style.display = 'block';
+          data.deniedChores.slice(0, 2).forEach(d => {
+            deniedList.innerHTML += `<div style="margin-top:4px;"><strong>${d.title}</strong>: "${d.reason}"</div>`;
+          });
+        } else {
+          deniedBox.style.display = 'none';
+        }
 
-          // Chores catalog
-          const choreSel = document.getElementById('choreSelect');
-          choreSel.innerHTML = '';
+        // Chores catalog
+        const choreSel = document.getElementById('choreSelect');
+        choreSel.innerHTML = '';
+        if (!data.chores || data.chores.length === 0) {
+          choreSel.innerHTML = '<option value="">No chores available</option>';
+        } else {
           data.chores.forEach(c => {
             choreSel.innerHTML += `<option value="${c.id}">${c.title} (+${activeCurrency}${Number(c.reward).toFixed(0)})</option>`;
           });
+        }
 
-          // Render Ledger
-          renderTransactions();
-        });
+        // Render Ledger
+        renderTransactions();
+      })
+      .catch(err => alert("Data Load Error: " + err.message));
     }
 
     function setTxFilter(btn, filterType) {
@@ -245,7 +262,7 @@ function init() {
 
       const filtered = rawHistory.filter(tx => {
         if (currentFilter === 'ALL') return true;
-        return tx.type.toLowerCase() === currentFilter.toLowerCase();
+        return String(tx.type).toLowerCase() === currentFilter.toLowerCase();
       });
 
       if (filtered.length === 0) {
@@ -277,11 +294,19 @@ function init() {
     function claimChore() {
       const token = sessionStorage.getItem('child_token');
       const choreId = document.getElementById('choreSelect').value;
+      if (!choreId) return alert('Select a chore to claim.');
+
       fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'submitChore', token, choreId })
-      }).then(() => alert('Sent for parent approval!'));
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'submitChore', token: token, choreId: choreId })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.error) throw new Error(res.error);
+        alert('Sent for parent approval!');
+      })
+      .catch(err => alert("Chore submission error: " + err.message));
     }
 
     function logSpending() {
@@ -292,13 +317,17 @@ function init() {
 
       fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'submitExpense', token, amount, desc })
-      }).then(() => {
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'submitExpense', token: token, amount: amount, desc: desc })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.error) throw new Error(res.error);
         document.getElementById('spendAmt').value = '';
         document.getElementById('spendDesc').value = '';
         loadChildData(token);
-      });
+      })
+      .catch(err => alert("Expense error: " + err.message));
     }
 
     function logout() {
@@ -309,6 +338,7 @@ function init() {
       init();
     }
 
+    // Initialize application on load
     init();
   </script>
 </body>
